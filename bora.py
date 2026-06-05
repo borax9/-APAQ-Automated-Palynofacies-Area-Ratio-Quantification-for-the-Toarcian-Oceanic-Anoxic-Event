@@ -6,14 +6,14 @@ import albumentations as A
 from pathlib import Path
 from tqdm import tqdm
 
-# --- AYARLAR ---
-IMAGE_DIR = Path(r"C:\dataset_split_3\valid\images")
-LABEL_DIR = Path(r"C:\dataset_split_3\valid\labels")
+# --- SETTINGS ---
+IMAGE_DIR = Path(r"C:\dataset_split_3\valid\images")         #You have to change according to yout folder repository
+LABEL_DIR = Path(r"C:\dataset_split_3\valid\labels")         #You have to change according to yout folder repository
 
 OUTPUT_IMG_DIR = Path(r"C:\dataset_split_3\images\valid_augmented")
 OUTPUT_LAB_DIR = Path(r"C:\dataset_split_3\labels\valid_augmented")
 
-# Orijinal 500 fotonun yanına her fotodan 4 yeni varyasyon üretilir (Toplam 2500 foto)
+# 4 TIMES MORE GENERATE IMAGES
 AUGMENT_COUNT_PER_IMAGE = 4 
 
 # --- Sadece Geometriyi Koruyan ve Dijital Çeşitlilik Sağlayan Pipeline ---
