@@ -3,18 +3,18 @@ A YOLOv26 Instance Segmentation Methodology
 
 Special augmentation script for T-OAE datasets: bora.py
 
-Veri Hazirlama:
+Dataset Preparation:
 
 C:\paly_toae\
 
-    dataset\          ← Roboflow/CVAT/Ultralytics/LabelImg'dan indirdiğin etiketlenen verilere ait zip'i buraya çıkart
+    dataset\          ← Label in Roboflow&CVAT&Ultralytics&LabelImg. Extract the zip file of downloaded labeled images
     
-    dataset_split\    ← Script otomatik oluşturacak, boş bırak 
+    dataset_split\    ← Script will create automaticaly , leave blank folder
     
     scripts\          ← bora_toae.ipynb
 
 
-Adım 1 — Ortam oluştur
+Step 1 — Create Environment
 
 
     conda create -n palytoae python=3.10 -y
@@ -23,19 +23,23 @@ Adım 1 — Ortam oluştur
     conda activate palytoae
 
 
-Adım 2 — Kütüphaneleri kur
+Step 2 — Setup Libraries
 
 
     pip install ultralytics tensorboard pyyaml rich
 
 
-Adım 3 — Script klasörüne git
+Step 3 — Go to Script Folder
 
 
     cd "C:\paly_toae\scripts"
 
 
-Adim 4 - Script Calistir
+Step 4 - Run the Script 
 
 
     python bora_toae.py
+
+
+Next Steps - Follow the instructions in the script (  python bora_toae.py )
+    
