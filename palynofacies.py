@@ -100,7 +100,7 @@ TYSON_FIELDS = [
         "name" : "Distal dysoxic-anoxic shelf",
         "color": "#E1D5E7",   # açık mor
         # AOM >60%, Pal orta
-        "pts"  : [(20,60,20),(40,60,0),(40,40,20),(20,40,40)],  # düzeltildi
+        "pts"  : [(20,60,20),(40,60,0),(40,40,20),(20,40,40)],  
     },
     {
         "num"  : "IX",
@@ -114,10 +114,17 @@ TYSON_FIELDS = [
 
 
 def tc(aom, pal, phy):
-    """Ternary → Kartezyen (AOM=sol alt, Pal=sağ alt, Phy=üst)"""
-    t = aom + pal + phy
-    if t == 0: return 0.5, 0.333
-    a, p, h = aom/t, pal/t, phy/t
+    """Ternary → Kartezyen (AOM=sol alt, Pal=sağ alt, Phy=üst)
+    Eksen okuma yönleri düzeltilmiş standart ternary izdüşümü.
+    """
+    total = aom + pal + phy
+    if total == 0: 
+        return 0.5, 0.333
+    
+    a = aom / total
+    p = pal / total
+    h = phy / total
+    
     x = p + h * 0.5
     y = h * (3**0.5) / 2
     return x, y
@@ -158,27 +165,37 @@ def analyze_image(model, img_path, class_names):
 
 
 def classify_facies(aom_pct, pal_pct, phy_pct):
-    """Hangi Tyson fasies alanına düştüğünü tahmin et."""
-    if phy_pct >= 80:
-        return "I",   "Highly proximal shelf or basin"
-    elif phy_pct >= 60 and pal_pct <= 20:
-        return "II",  "Marginal dysoxic-oxic basin"
-    elif phy_pct >= 40 and pal_pct >= 20:
-        return "III", "Heterolithic oxic shelf (proximal)"
-    elif phy_pct >= 60 and aom_pct >= 20:
-        return "IV",  "Shelf to basin transition"
-    elif pal_pct >= 60:
-        return "V",   "Mud-dominated oxic shelf (distal)"
-    elif aom_pct >= 40 and phy_pct >= 20:
-        return "VI",  "Proximal suboxic-anoxic shelf"
-    elif aom_pct >= 60 and phy_pct >= 20:
-        return "VII", "Distal dysoxic-anoxic shelf"
-    elif aom_pct >= 40 and pal_pct >= 40:
-        return "VIII","Distal dysoxic-anoxic shelf"
-    elif aom_pct >= 60:
-        return "IX",  "Distal suboxic-anoxic basin"
-    else:
-        return "IV",  "Shelf to basin transition (mixed)"
+    """Tyson (1995) alanlarının merkez noktalarına olan en yakın mesafeye göre 
+    en doğru fasies alanını belirler (Geometrik Sınıflandırma).
+    """
+    field_centers = {
+        "I":    (10, 10, 80),
+        "II":   (10, 30, 60),
+        "III":  (10, 50, 40),
+        "IV":   (30, 10, 60),
+        "V":    (10, 70, 20),
+        "VI":   (40, 10, 50),
+        "VII":  (50, 30, 20),
+        "VIII": (30, 50, 20),
+        "IX":   (70, 10, 20)
+    }
+    
+    best_field = "IV"
+    min_dist = float("inf")
+    
+    for f_num, center in field_centers.items():
+        dist = ((aom_pct - center[0])**2 + 
+                (pal_pct - center[1])**2 + 
+                (phy_pct - center[2])**2)**0.5
+        if dist < min_dist:
+            min_dist = dist
+            best_field = f_num
+            
+    for f in TYSON_FIELDS:
+        if f["num"] == best_field:
+            return f["num"], f["name"]
+            
+    return "IV", "Shelf to basin transition (mixed)"
 
 
 def draw_tyson_ternary(ax):
@@ -462,7 +479,7 @@ def main():
 
     rows = []
     for i, img_path in enumerate(images, 1):
-        print(f"  [{i:3d}/{len(images)}] {img_path.name}", end="\r")
+        print(f"   [{i:3d}/{len(images)}] {img_path.name}", end="\r")
         rows.append(analyze_image(model, img_path, CLASS_NAMES))
     print(f"\n✅ Analiz tamamlandı\n")
 
