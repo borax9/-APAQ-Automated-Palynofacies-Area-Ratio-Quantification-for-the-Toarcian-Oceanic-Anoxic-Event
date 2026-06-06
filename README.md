@@ -38,7 +38,7 @@ Step 3 — Go to Script Folder
 Step 4 - Run the Script 
 
 
-    python bora_toae.py
+    python bora_toae_paly.py
 
 
 Next Steps - Follow the instructions in the script (  python bora_toae.py )
