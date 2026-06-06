@@ -66,7 +66,7 @@ Kullanım (training bittikten sonra):
 
       pip install ultralytics matplotlib pandas openpyxl
 
-      python 5_palynofacies.py \
+      python palynofacies.py \
 
       weights C:\palytoae\runs\exp_XXX\weights\best.pt \
       
