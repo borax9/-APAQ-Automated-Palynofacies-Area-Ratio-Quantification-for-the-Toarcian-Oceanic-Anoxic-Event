@@ -44,7 +44,7 @@ Step 4 - Run the Script
 Next Steps - Follow the instructions in the script (  python bora_toae.py )
 
 
-AFTER TRAINING - AUTOMATED PALYNOFACIES ANALYSIS
+AFTER TRAINING - AUTOMATED PALYNOFACIES ANALYSIS - Follow the Full Script
 
 📊 How Script works?
 Input: 100 test image + best.pt
@@ -71,4 +71,15 @@ Kullanım (training bittikten sonra):
       weights C:\palytoae\runs\exp_XXX\weights\best.pt \
       
       images  C:\palytoae\test_images\
-    
+
+
+To able to test palynofacies with different magnifications:
+
+    test_images/
+    10x/   ← 10x görüntüler
+    20x/   ← 20x görüntüler  
+    40x/   ← 40x görüntüler
+
+    python 5_palynofacies.py --weights best.pt --images test_images/10x/
+    python 5_palynofacies.py --weights best.pt --images test_images/20x/
+    python 5_palynofacies.py --weights best.pt --images test_images/40x/
