@@ -42,4 +42,33 @@ Step 4 - Run the Script
 
 
 Next Steps - Follow the instructions in the script (  python bora_toae.py )
+
+
+AFTER TRAINING - AUTOMATED PALYNOFACIES ANALYSIS
+
+📊 How Script works?
+Input: 100 test image + best.pt
+Her görüntü için hesaplar:
+
+Her sınıftan kaç obje detect edildi
+Her sınıfın mask alanı (piksel) ve yüzdesi (Background hariç)
+
+Çıktılar:
+Dosyaİçerikpalynofacies_results.csvHer görüntü için tüm sayılarpalynofacies_report.xlsxPer-image + Summary sheetsummary_charts.pngBar + Pie charttyson_ternary_plot.pngTyson Ternary Plot
+Tyson plot'ta:
+
+Her görüntü ayrı nokta olarak çizilir
+Kırmızı yıldız = tüm dataset'in ortalaması
+Fasies yorumu otomatik yazılır (Anoxic / Oxic / Terrestrial / Mixed)
+
+
+Kullanım (training bittikten sonra):
+
+      pip install ultralytics matplotlib pandas openpyxl
+
+      python 5_palynofacies.py \
+
+      weights C:\palytoae\runs\exp_XXX\weights\best.pt \
+      
+      images  C:\palytoae\test_images\
     
