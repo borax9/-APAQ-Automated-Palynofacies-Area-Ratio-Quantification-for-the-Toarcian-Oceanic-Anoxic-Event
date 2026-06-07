@@ -8,8 +8,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.patches import Patch 
-import matplotlib.patches as mpatches
+import matplotlib.patches as mpatches  # <-- Hata buradaydı, düzeltildi.
 from matplotlib.patches import Polygon
 
 warnings.filterwarnings("ignore")
@@ -26,83 +25,41 @@ COLORS = {
     "Palynomorph": "#27AE60",
     "Phytoclast" : "#2980B9",
 }
+MEAN_COLOR = "#E91E63"
 
-# ─── TYSON (1995) 9 FASİES ALANI (DÜZELTİLMİŞ) ────────────────────────────────
+# ─── TYSON (1995) FASİES ALANLARI ─────────────────────────────────────────────
 TYSON_FIELDS = [
-    {
-        "num"  : "I",
-        "name" : "Highly proximal shelf or basin",
-        "color": "#D5E8D4",
-        "pts"  : [(0,0,100),(20,0,80),(20,20,60),(0,20,80)],
-    },
-    {
-        "num"  : "II",
-        "name" : "Marginal dysoxic-oxic shelf",  # Basin ifadesi Shelf olarak düzeltildi
-        "color": "#DAE8FC",
-        "pts"  : [(0,20,80),(20,20,60),(20,40,40),(0,40,60)],
-    },
-    {
-        "num"  : "III",
-        "name" : "Heterolithic oxic shelf (proximal)",
-        "color": "#D5E8D4",
-        "pts"  : [(0,40,60),(20,40,40),(20,60,20),(0,60,40)],
-    },
-    {
-        "num"  : "IV",
-        "name" : "Shelf to basin transition",
-        "color": "#FFF2CC",
-        "pts"  : [(20,0,80),(40,0,60),(40,20,40),(20,20,60)],
-    },
-    {
-        "num"  : "V",
-        "name" : "Mud-dominated oxic shelf (distal)",
-        "color": "#DAE8FC",
-        "pts"  : [(0,60,40),(20,60,20),(20,80,0),(0,80,20)],
-    },
-    {
-        "num"  : "VI",
-        "name" : "Proximal suboxic-anoxic shelf",
-        "color": "#FFE6CC",
-        "pts"  : [(20,0,80),(60,0,40),(60,20,20),(40,20,40),(40,0,60)],
-    },
-    {
-        "num"  : "VII",
-        "name" : "Distal dysoxic-anoxic shelf",
-        "color": "#F8CECC",
-        "pts"  : [(40,20,40),(60,20,20),(60,40,0),(40,40,20)],
-    },
-    {
-        "num"  : "VIII",
-        "name" : "Distal dysoxic-anoxic basin",  # VII ile karışmaması için Basin olarak düzeltildi
-        "color": "#E1D5E7",
-        "pts"  : [(20,60,20),(40,60,0),(40,40,20),(20,40,40)],  
-    },
-    {
-        "num"  : "IX",
-        "name" : "Distal suboxic-anoxic basin",
-        "color": "#F8CECC",
-        "pts"  : [(60,0,40),(100,0,0),(60,40,0),(60,20,20)],
-    },
+    {"num": "I",    "name": "Highly proximal shelf or basin",       "color": "#C8E6C9", "pts": [(0,0,100),(10,0,90),(0,10,90)]},
+    {"num": "II",   "name": "Marginal dysoxic-oxic shelf",          "color": "#BBDEFB", "pts": [(10,0,90),(40,0,60),(40,10,50),(0,50,50),(0,10,90)]},
+    {"num": "III",  "name": "Heterolithic oxic shelf (proximal)",   "color": "#C8E6C9", "pts": [(0,50,50),(30,50,20),(0,80,20)]},
+    {"num": "IVa",  "name": "Shelf to basin transition (a)",        "color": "#FFF9C4", "pts": [(40,10,50),(0,50,50),(10,50,40),(40,20,40)]},
+    {"num": "IVb",  "name": "Shelf to basin transition (b)",        "color": "#FFE0B2", "pts": [(40,20,40),(10,50,40),(30,50,20),(40,40,20)]},
+    {"num": "V",    "name": "Mud-dominated oxic shelf (distal)",    "color": "#BBDEFB", "pts": [(30,50,20),(50,50,0),(0,100,0),(0,80,20)]},
+    {"num": "VI",   "name": "Proximal suboxic-anoxic shelf",        "color": "#FFE0B2", "pts": [(40,0,60),(40,10,50),(40,20,40),(60,0,40)]},
+    {"num": "VII",  "name": "Distal dysoxic-anoxic shelf",          "color": "#FFCDD2", "pts": [(40,40,20),(60,40,0),(50,50,0),(30,50,20)]},
+    {"num": "VIII", "name": "Distal dysoxic-anoxic basin",          "color": "#E1BEE7", "pts": [(60,0,40),(80,0,20),(80,20,0),(60,40,0),(40,40,20),(40,20,40)]},
+    {"num": "IX",   "name": "Distal suboxic-anoxic basin",          "color": "#FFCDD2", "pts": [(80,0,20),(80,20,0),(100,0,0)]},
 ]
 
-def tc(aom, pal, phy):
-    """Ternary → Kartezyen Dönüşümü (AOM=Sol Alt, Pal=Sağ Alt, Phy=Üst Apex)"""
-    total = aom + pal + phy
-    if total == 0: 
-        return 0.5, 0.333
-    a = aom / total
-    p = pal / total
-    h = phy / total
-    
-    x = p + h * 0.5
-    y = h * (3**0.5) / 2
-    return x, y
+# ─── KÖŞELERİN GÖRSEL PİKSEL KOORDİNATLARI ───────────────────────────────────
+_PX = {"aom": (76, 530), "pal": (660, 530), "phy": (368, 105)}
 
+def tc(aom, pal, phy):
+    """(AOM%, PAL%, PHY%) → görsel piksel koordinatı (px, py)."""
+    total = aom + pal + phy
+    if total == 0:
+        return 368.0, 317.0
+    a, p, h = aom / total, pal / total, phy / total
+    px = a * _PX["aom"][0] + p * _PX["pal"][0] + h * _PX["phy"][0]
+    py = a * _PX["aom"][1] + p * _PX["pal"][1] + h * _PX["phy"][1]
+    return px, py
+
+
+# ─── MODEL FONKSİYONLARI ──────────────────────────────────────────────────────
 def analyze_image(model, img_path, class_names):
     results = model(str(img_path), conf=CONF_THRESH, iou=IOU_THRESH, verbose=False)
     counts, areas = defaultdict(int), defaultdict(float)
     total_pixels = 0
-
     for r in results:
         h, w = r.orig_shape
         total_pixels = h * w
@@ -112,156 +69,161 @@ def analyze_image(model, img_path, class_names):
             cls_name = class_names[int(cls_id)]
             counts[cls_name] += 1
             areas[cls_name]  += float(mask.cpu().numpy().sum())
-
     row = {"image": img_path.name, "total_pixels": total_pixels}
     total_palyno_area  = sum(areas.get(g, 0) for g in PALYNO_GROUPS)
     total_palyno_count = sum(counts.get(g, 0) for g in PALYNO_GROUPS)
-
     for g in PALYNO_GROUPS:
         row[f"{g}_count"] = counts.get(g, 0)
         row[f"{g}_area"]  = areas.get(g, 0.0)
         a = areas.get(g, 0.0)
         c = counts.get(g, 0)
-        row[f"{g}_area_pct"]  = (a/total_palyno_area*100)  if total_palyno_area  > 0 else 0.0
-        row[f"{g}_count_pct"] = (c/total_palyno_count*100) if total_palyno_count > 0 else 0.0
-
+        row[f"{g}_area_pct"]  = (a / total_palyno_area  * 100) if total_palyno_area  > 0 else 0.0
+        row[f"{g}_count_pct"] = (c / total_palyno_count * 100) if total_palyno_count > 0 else 0.0
     row[f"{BG_CLASS}_count"] = counts.get(BG_CLASS, 0)
     row[f"{BG_CLASS}_area"]  = areas.get(BG_CLASS, 0.0)
     row["total_palyno_area"]  = total_palyno_area
     row["total_palyno_count"] = total_palyno_count
     return row
 
+
 def classify_facies(aom_pct, pal_pct, phy_pct):
-    field_centers = {
-        "I":    (10, 10, 80), "II":   (10, 30, 60), "III":  (10, 50, 40),
-        "IV":   (30, 10, 60), "V":    (10, 70, 20), "VI":   (40, 10, 50),
-        "VII":  (50, 30, 20), "VIII": (30, 50, 20), "IX":   (70, 10, 20)
-    }
-    best_field = "IV"
-    min_dist = float("inf")
-    for f_num, center in field_centers.items():
-        dist = ((aom_pct - center[0])**2 + (pal_pct - center[1])**2 + (phy_pct - center[2])**2)**0.5
-        if dist < min_dist:
-            min_dist = dist
-            best_field = f_num
-            
-    for f in TYSON_FIELDS:
-        if f["num"] == best_field:
-            return f["num"], f["name"]
-    return "IV", "Shelf to basin transition"
-
-def draw_tyson_ternary(ax):
-    """Tyson Alanlarını ve Dinamik Ok Göstergelerini Çiz"""
-    # Alan Poligonlarını Doldur
+    best_field, best_name, min_dist = "IVa", "Shelf to basin transition (a)", float("inf")
     for field in TYSON_FIELDS:
-        cart_pts = [tc(a,p,h) for (a,p,h) in field["pts"]]
-        poly = Polygon(cart_pts, closed=True, facecolor=field["color"], 
-                       edgecolor="#B0B0B0", linewidth=0.5, alpha=0.8, zorder=1)
-        ax.add_patch(poly)
+        pts = field["pts"]
+        c_aom = sum(p[0] for p in pts) / len(pts)
+        c_pal = sum(p[1] for p in pts) / len(pts)
+        c_phy = sum(p[2] for p in pts) / len(pts)
+        dist  = ((aom_pct - c_aom)**2 + (pal_pct - c_pal)**2 + (phy_pct - c_phy)**2)**0.5
+        if dist < min_dist:
+            min_dist, best_field, best_name = dist, field["num"], field["name"]
+    return best_field, best_name
 
-        # Alan Numaraları ve Yazıları
-        cx = np.mean([pt[0] for pt in cart_pts])
-        cy = np.mean([pt[1] for pt in cart_pts])
-        ax.text(cx, cy + 0.015, field["num"], ha="center", va="center",
-                fontsize=11, fontweight="bold", color="#2C3E50", zorder=4)
-        ax.text(cx, cy - 0.02, field["name"], ha="center", va="center",
-                fontsize=5.5, color="#555555", wrap=True, zorder=4, multialignment="center")
 
-    # Ana Üçgen Çerçevesi
-    corners = [tc(100,0,0), tc(0,100,0), tc(0,0,100)]
-    tri = Polygon(corners, closed=True, fill=False, edgecolor="#1A1A1A", linewidth=2, zorder=5)
-    ax.add_patch(tri)
+# ─── ANA TYSON TERNARY PLOT ───────────────────────────────────────────────────
+def plot_tyson_ternary(df, out_path, ref_img_str):
+    IMG_W, IMG_H = 736, 610
 
-    # İnce Kılavuz Çizgileri (%20 Aralıklı İç Izgara)
-    for frac in [0.2, 0.4, 0.6, 0.8]:
-        p = frac * 100; q = 100 - p
-        ax.plot(*zip(tc(p,q,0), tc(p,0,q)), color="gray", lw=0.4, ls=":", alpha=0.4, zorder=2)
-        ax.plot(*zip(tc(0,p,q), tc(q,p,0)), color="gray", lw=0.4, ls=":", alpha=0.4, zorder=2)
-        ax.plot(*zip(tc(q,0,p), tc(0,q,p)), color="gray", lw=0.4, ls=":", alpha=0.4, zorder=2)
+    fig = plt.figure(figsize=(20, 11))
 
-    # Köşe Ana Başlıkları
-    ax.text(-0.02, -0.02, "AOM\n(Amorphous Organic Matter)", ha="right", va="top", fontsize=12, fontweight="bold", color=COLORS["AOM"])
-    ax.text(1.02, -0.02, "Palynomorphs\n(Spores/Pollen/Microplankton)", ha="left", va="top", fontsize=12, fontweight="bold", color=COLORS["Palynomorph"])
-    ax.text(0.5, 0.866 + 0.03, "Phytoclasts\n(Wood/Plant Debris)", ha="center", va="bottom", fontsize=12, fontweight="bold", color=COLORS["Phytoclast"])
-
-    # ── YÜZDELER YERİNE DİNAMİK OK KILAVUZLARI (PetroStrat Stili) ──
-    # 1. AOM Artış Yönü (Sağdan Sola)
-    ax.annotate("", xy=(0.1, -0.06), xytext=(0.9, -0.06), arrowprops=dict(arrowstyle="->", color=COLORS["AOM"], lw=1.5))
-    ax.text(0.5, -0.09, "Increasing AOM ──", ha="center", va="top", color=COLORS["AOM"], fontsize=9, fontweight="bold")
-
-    # 2. Phytoclast Artış Yönü (Aşağıdan Yukarıya - Sol Kenar)
-    ax.annotate("", xy=(0.5 - 0.05, 0.866), xytext=(0.0 - 0.05, 0.0), arrowprops=dict(arrowstyle="->", color=COLORS["Phytoclast"], lw=1.5))
-    ax.text(0.25 - 0.06, 0.433, "── Increasing Phytoclasts", ha="center", va="bottom", color=COLORS["Phytoclast"], fontsize=9, fontweight="bold", rotation=60)
-
-    # 3. Palynomorph Artış Yönü (Yukarıdan Aşağı Sağ Köşeye - Sağ Kenar)
-    ax.annotate("", xy=(1.0 + 0.05, 0.0), xytext=(0.5 + 0.05, 0.866), arrowprops=dict(arrowstyle="->", color=COLORS["Palynomorph"], lw=1.5))
-    ax.text(0.75 + 0.06, 0.433, "Increasing Palynomorphs ──", ha="center", va="bottom", color=COLORS["Palynomorph"], fontsize=9, fontweight="bold", rotation=-60)
-
-    ax.set_xlim(-0.25, 1.45)
-    ax.set_ylim(-0.15, 0.98)
+    # ── Sol: görsel + üçgen  ──────────────────────────────────────────────────
+    ax = fig.add_axes([0.02, 0.05, 0.56, 0.88])
+    ax.set_xlim(-60, IMG_W + 60)
+    ax.set_ylim(IMG_H + 60, -80)   # y ters
+    ax.set_aspect("equal")
     ax.axis("off")
 
-def plot_tyson_ternary(df, out_path):
-    fig, ax = plt.subplots(figsize=(14, 10))
-    ax.set_aspect("equal")
+    # Referans görsel
+    ref_img_path = Path(ref_img_str)
+    if ref_img_path.exists():
+        try:
+            img = plt.imread(str(ref_img_path))
+            ax.imshow(img, extent=[0, IMG_W - 1, IMG_H - 1, 0],
+                      aspect="auto", zorder=1, alpha=1.0)
+        except Exception as e:
+            print(f"  ⚠️ Referans görsel yüklenemedi: {e}")
+    else:
+        print(f"  ⚠️ '{ref_img_str}' bulunamadı.")
 
-    ax.set_title(
-        "Tyson (1995) Ternary Plot — Palynofacies Analysis\n"
-        f"n = {len(df)} samples  |  {datetime.now().strftime('%Y-%m-%d')}",
-        fontsize=14, fontweight="bold", pad=20
-    )
+    # Numune noktaları
+    xs = [tc(row["AOM_area_pct"], row["Palynomorph_area_pct"], row["Phytoclast_area_pct"])[0]
+          for _, row in df.iterrows()]
+    ys = [tc(row["AOM_area_pct"], row["Palynomorph_area_pct"], row["Phytoclast_area_pct"])[1]
+          for _, row in df.iterrows()]
+    ax.scatter(xs, ys, c="#1A1A2E", s=80, zorder=6, alpha=0.92,
+               edgecolors="white", linewidth=1.0)
 
-    draw_tyson_ternary(ax)
-
-    # Örnek Noktalarını Çiz
-    xs, ys = [], []
-    for _, row in df.iterrows():
-        x, y = tc(row["AOM_area_pct"], row["Palynomorph_area_pct"], row["Phytoclast_area_pct"])
-        xs.append(x); ys.append(y)
-
-    ax.scatter(xs, ys, c="#2C3E50", s=60, zorder=7, alpha=0.85, edgecolors="white", linewidth=0.7, label="Sample")
-
-    # Ortalama Noktası (Mean) Hesaplama ve Projeksiyonu
-    ma, mp, mh = df["AOM_area_pct"].mean(), df["Palynomorph_area_pct"].mean(), df["Phytoclast_area_pct"].mean()
+    # Ortalama noktası
+    ma = df["AOM_area_pct"].mean()
+    mp = df["Palynomorph_area_pct"].mean()
+    mh = df["Phytoclast_area_pct"].mean()
     mx, my = tc(ma, mp, mh)
-    
-    ax.scatter([mx], [my], c="red", s=220, zorder=8, edgecolors="white", linewidth=1.5, marker="*", label="Mean")
+    ax.scatter([mx], [my], c=MEAN_COLOR, s=300, zorder=7,
+               edgecolors="white", linewidth=1.5, marker="*")
 
-    fasies_num, _ = classify_facies(ma, mp, mh)
-    ax.annotate(
-        f"Mean: Field {fasies_num}\n"
-        f"AOM: {ma:.1f}%\nPal: {mp:.1f}%\nPhy: {mh:.1f}%",
-        xy=(mx, my), xytext=(mx + 0.12, my + 0.08),
-        fontsize=9, color="red", fontweight="bold",
-        arrowprops=dict(arrowstyle="->", color="red", lw=1.2),
-        bbox=dict(boxstyle="round,pad=0.4", fc="white", ec="red", alpha=0.9),
-        zorder=10
-    )
+    # Köşe etiketleri
+    pad = 22
+    ax.text(_PX["aom"][0] - pad, _PX["aom"][1] + pad,
+            "AOM\n(Amorphous\nOrganic Matter)",
+            ha="right", va="top", fontsize=10, fontweight="bold",
+            color=COLORS["AOM"], zorder=8)
+    ax.text(_PX["pal"][0] + pad, _PX["pal"][1] + pad,
+            "Palynomorphs\n(Spores/Pollen/\nMicroplankton)",
+            ha="left", va="top", fontsize=10, fontweight="bold",
+            color=COLORS["Palynomorph"], zorder=8)
+    ax.text(_PX["phy"][0], _PX["phy"][1] - pad,
+            "Phytoclasts\n(Wood/Plant Debris)",
+            ha="center", va="bottom", fontsize=10, fontweight="bold",
+            color=COLORS["Phytoclast"], zorder=8)
 
-    # Sağ Kenara Hizalanmış Temiz Lejant Yapısı (Çakışmalar Önlendi)
-    field_patches = [
-        mpatches.Patch(facecolor=f["color"], edgecolor="#888", label=f"Field {f['num']}: {f['name']}")
-        for f in TYSON_FIELDS
-    ]
-    corner_patches = [
-        mpatches.Patch(color=COLORS["AOM"],         label=f"AOM (mean {ma:.1f}%)"),
-        mpatches.Patch(color=COLORS["Palynomorph"], label=f"Palynomorph (mean {mp:.1f}%)"),
-        mpatches.Patch(color=COLORS["Phytoclast"],  label=f"Phytoclast (mean {mh:.1f}%)"),
-        plt.Line2D([0],[0], marker="o", color="w", markerfacecolor="#2C3E50", markersize=8, label="Sample"),
-        plt.Line2D([0],[0], marker="*", color="w", markerfacecolor="red", markersize=12, label="Mean Data Point"),
-    ]
+    # Başlık
+    fig.text(0.30, 0.995,
+             "Tyson (1995) Ternary Plot — Palynofacies Analysis",
+             ha="center", va="top", fontsize=14, fontweight="bold")
+    fig.text(0.30, 0.958,
+             f"n = {len(df)} samples  |  {datetime.now().strftime('%Y-%m-%d')}",
+             ha="center", va="top", fontsize=11, color="#555555")
 
-    leg1 = ax.legend(handles=field_patches, loc="upper left", bbox_to_anchor=(1.02, 1.0),
-                     fontsize=8, framealpha=0.9, title="Tyson (1995) Fields", title_fontsize=9)
-    ax.add_artist(leg1)
-    
-    ax.legend(handles=corner_patches, loc="upper left", bbox_to_anchor=(1.02, 0.45),
-              fontsize=8, framealpha=0.9, title="Statistics & Legend", title_fontsize=9)
+    # ── Sağ: Lejant  ─────────────────────────────────────────────────────────
+    ax_leg = fig.add_axes([0.60, 0.05, 0.38, 0.88])
+    ax_leg.axis("off")
 
-    plt.tight_layout()
+    y_cursor = 0.98
+
+    def leg_title(text, y):
+        ax_leg.text(0.0, y, text,
+                    transform=ax_leg.transAxes,
+                    fontsize=11, fontweight="bold", color="#1A1A2E",
+                    va="top")
+        return y - 0.045
+
+    def leg_item(color, label, y, marker=None):
+        if marker == "*":
+            ax_leg.scatter([0.018], [y - 0.012], s=220, c=color, marker="*",
+                           transform=ax_leg.transAxes, zorder=5,
+                           edgecolors="white", linewidth=0.8, clip_on=False)
+        elif marker == "o":
+            ax_leg.scatter([0.018], [y - 0.012], s=80, c=color, marker="o",
+                           transform=ax_leg.transAxes, zorder=5,
+                           edgecolors="white", linewidth=0.8, clip_on=False)
+        else:
+            rect = mpatches.FancyBboxPatch(
+                (0.0, y - 0.026), 0.038, 0.028,
+                boxstyle="round,pad=0.002",
+                facecolor=color, edgecolor="#999", linewidth=0.7,
+                transform=ax_leg.transAxes, clip_on=False)
+            ax_leg.add_patch(rect)
+        ax_leg.text(0.052, y - 0.009, label,
+                    transform=ax_leg.transAxes,
+                    fontsize=9.2, va="center", color="#222222")
+        return y - 0.042
+
+    # — Tyson Alanları —
+    y_cursor = leg_title("Tyson (1995) Facies Fields", y_cursor)
+    ax_leg.plot([0, 1], [y_cursor + 0.008, y_cursor + 0.008],
+               color="#CCCCCC", linewidth=0.8,
+               transform=ax_leg.transAxes)
+    y_cursor -= 0.008
+    for field in TYSON_FIELDS:
+        label = f"  {field['num']:>4s}  {field['name']}"
+        y_cursor = leg_item(field["color"], label, y_cursor)
+
+    y_cursor -= 0.018
+    ax_leg.plot([0, 1], [y_cursor + 0.008, y_cursor + 0.008],
+               color="#CCCCCC", linewidth=0.8,
+               transform=ax_leg.transAxes)
+
+    # — İstatistik & Semboller —
+    y_cursor = leg_title("Statistics & Symbols", y_cursor)
+    y_cursor = leg_item(COLORS["AOM"],          f"AOM (mean {ma:.1f}%)",          y_cursor)
+    y_cursor = leg_item(COLORS["Palynomorph"],  f"Palynomorph (mean {mp:.1f}%)",  y_cursor)
+    y_cursor = leg_item(COLORS["Phytoclast"],   f"Phytoclast (mean {mh:.1f}%)",   y_cursor)
+    y_cursor = leg_item("#1A1A2E", "Sample Point", y_cursor, marker="o")
+    y_cursor = leg_item(MEAN_COLOR, "Mean Data Point", y_cursor, marker="*")
+
     plt.savefig(out_path, dpi=200, bbox_inches="tight", facecolor="white")
     plt.close()
-    print(f"  Tyson ternary plot başarıyla düzeltildi → {out_path}")
+    print(f"  ✓ Tyson ternary plot kaydedildi → {out_path}")
+
 
 def plot_summary_charts(df, out_dir):
     fig, axes = plt.subplots(1, 3, figsize=(16, 5))
@@ -269,7 +231,6 @@ def plot_summary_charts(df, out_dir):
     means_area  = [df[f"{g}_area_pct"].mean()  for g in PALYNO_GROUPS]
     means_count = [df[f"{g}_count_pct"].mean() for g in PALYNO_GROUPS]
     colors      = [COLORS[g] for g in PALYNO_GROUPS]
-
     for ax, vals, title, ylabel in [
         (axes[0], means_area,  "Mean Area %",  "Mean Area %"),
         (axes[1], means_count, "Mean Count %", "Mean Count %"),
@@ -277,63 +238,77 @@ def plot_summary_charts(df, out_dir):
         bars = ax.bar(PALYNO_GROUPS, vals, color=colors, edgecolor="white", lw=1.2)
         ax.set_ylabel(ylabel); ax.set_title(title); ax.set_ylim(0, 105)
         for bar, v in zip(bars, vals):
-            ax.text(bar.get_x()+bar.get_width()/2, v+1, f"{v:.1f}%", ha="center", fontsize=10, fontweight="bold")
-
-    axes[2].pie(means_area, labels=PALYNO_GROUPS, colors=colors, autopct="%1.1f%%", startangle=90, wedgeprops=dict(edgecolor="white", linewidth=1.5))
+            ax.text(bar.get_x() + bar.get_width() / 2, v + 1,
+                    f"{v:.1f}%", ha="center", fontsize=10, fontweight="bold")
+    axes[2].pie(means_area, labels=PALYNO_GROUPS, colors=colors,
+                autopct="%1.1f%%", startangle=90,
+                wedgeprops=dict(edgecolor="white", linewidth=1.5))
     axes[2].set_title("Overall Area Distribution")
     plt.tight_layout()
     plt.savefig(out_dir / "summary_charts.png", dpi=150, bbox_inches="tight")
     plt.close()
+
 
 def save_reports(df, out_dir):
     df.to_csv(out_dir / "palynofacies_results.csv", index=False, float_format="%.3f")
     with pd.ExcelWriter(out_dir / "palynofacies_report.xlsx", engine="openpyxl") as writer:
         df.to_excel(writer, sheet_name="Per Image", index=False)
         summary = pd.DataFrame({
-            "Class": PALYNO_GROUPS,
-            "Mean Area %":   [df[f"{g}_area_pct"].mean()  for g in PALYNO_GROUPS],
-            "Std Area %":    [df[f"{g}_area_pct"].std()   for g in PALYNO_GROUPS],
-            "Mean Count %":  [df[f"{g}_count_pct"].mean() for g in PALYNO_GROUPS],
-            "Total Count":   [int(df[f"{g}_count"].sum()) for g in PALYNO_GROUPS]
+            "Class"       : PALYNO_GROUPS,
+            "Mean Area %" : [df[f"{g}_area_pct"].mean()  for g in PALYNO_GROUPS],
+            "Std Area %"  : [df[f"{g}_area_pct"].std()   for g in PALYNO_GROUPS],
+            "Mean Count %": [df[f"{g}_count_pct"].mean() for g in PALYNO_GROUPS],
+            "Total Count" : [int(df[f"{g}_count"].sum()) for g in PALYNO_GROUPS],
         })
         summary.to_excel(writer, sheet_name="Summary", index=False)
 
+
 def print_summary(df):
-    ma, mp, mh = df["AOM_area_pct"].mean(), df["Palynomorph_area_pct"].mean(), df["Phytoclast_area_pct"].mean()
+    ma = df["AOM_area_pct"].mean()
+    mp = df["Palynomorph_area_pct"].mean()
+    mh = df["Phytoclast_area_pct"].mean()
     fnum, fname = classify_facies(ma, mp, mh)
-    print("\n" + "="*65)
-    print(f"Baskın Tyson Fasies Alanı : Field {fnum} ── {fname}")
+    print("\n" + "=" * 65)
+    print(f"Baskın Tyson Fasiyes Alanı : Field {fnum} ── {fname}")
     print(f"Ortalama Oranlar: AOM={ma:.1f}% | Palynomorph={mp:.1f}% | Phytoclast={mh:.1f}%")
-    print("="*65)
+    print("=" * 65)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Palynofacies Analyzer")
     parser.add_argument("--weights", required=True)
     parser.add_argument("--images",  required=True)
     parser.add_argument("--out_dir", default=None)
+    parser.add_argument("--ref_img", default="Screenshot 2026-06-06 222542.jpg",
+                        help="Arka plana bindirilecek Tyson diyagram görseli")
     args = parser.parse_args()
 
     weights_path = Path(args.weights)
     images_path  = Path(args.images)
-    out_dir = Path(args.out_dir) if args.out_dir else weights_path.parent.parent / "palynofacies"
+    out_dir = (Path(args.out_dir) if args.out_dir
+               else weights_path.parent.parent / "palynofacies")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    images = sorted(p for p in images_path.iterdir() if p.suffix.lower() in {".jpg",".jpeg",".png",".bmp"})
+    images = sorted(p for p in images_path.iterdir()
+                    if p.suffix.lower() in {".jpg", ".jpeg", ".png", ".bmp"})
     if not images:
-        print(f"❌ Görüntü bulunamadı: {images_path}"); sys.exit(1)
+        print(f"❌ Görüntü bulunamadı: {images_path}")
+        sys.exit(1)
 
     from ultralytics import YOLO
     model = YOLO(str(weights_path))
 
     rows = []
     for i, img_path in enumerate(images, 1):
+        print(f"  [{i}/{len(images)}] {img_path.name}")
         rows.append(analyze_image(model, img_path, CLASS_NAMES))
 
     df = pd.DataFrame(rows)
     print_summary(df)
     save_reports(df, out_dir)
     plot_summary_charts(df, out_dir)
-    plot_tyson_ternary(df, out_dir / "tyson_ternary_plot.png")
+    plot_tyson_ternary(df, out_dir / "tyson_ternary_plot.png", args.ref_img)
+
 
 if __name__ == "__main__":
     main()
