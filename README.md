@@ -105,6 +105,6 @@ If you wish to deploy this pipeline on a different optical platform (e.g., Nikon
 2. Measure the pixel length of a known physical distance (e.g., $100\ \mu m$) using an image analyzer.
 3. Calculate your custom factor: `Calibration Factor = Distance (µm) / Pixel Count`.
 4. Modify the calibration variables in the `palynofacies_full.py` script.
-5. All necessary code are in the '--microscope.py' script just add your values and update the 'palynofacies_full.py' script.
+5. All necessary code are in the 'microscope.py' script just add your values and update the 'palynofacies_full.py' script.
 
 *Note: For paleoenvironmental proxy analysis via the Tyson Ternary Plot, the pipeline calculates relative area percentages (% Area). Since relative ratios within a single frame are strictly scale-invariant, the distribution output remains mathematically accurate even without modifying the default calibration factors.*
