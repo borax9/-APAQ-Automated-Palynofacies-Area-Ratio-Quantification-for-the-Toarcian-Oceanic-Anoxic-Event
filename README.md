@@ -62,7 +62,8 @@ Kırmızı yıldız = tüm dataset'in ortalaması
 Fasies yorumu otomatik yazılır (Anoxic / Oxic / Terrestrial / Mixed)
 
 
-Kullanım (training bittikten sonra):
+How to use model after training to apply palynofacies[Uploading gemini-code-1781710927908.md…]()
+:
 
       pip install ultralytics matplotlib pandas openpyxl
 
@@ -73,7 +74,7 @@ Kullanım (training bittikten sonra):
       images  C:\palytoae\test_images\
 
 
-To able to test palynofacies with different magnifications:
+To able to test palynofacies with different magnifications create folder repository in your environment:
 
     test_images/
     10x/   ← 10x görüntüler
@@ -83,3 +84,27 @@ To able to test palynofacies with different magnifications:
     python 5_palynofacies.py --weights best.pt --images test_images/10x/
     python 5_palynofacies.py --weights best.pt --images test_images/20x/
     python 5_palynofacies.py --weights best.pt --images test_images/40x/
+
+
+    ## Hardware Calibration & Spatial Quantification
+
+The post-processing analytical engine (**Phase 2 - `palynofacies_full.py`**) automatically converts pixel-level segmentation masks predicted by the YOLOv26 model into absolute real-world spatial areas ($\mu m^2$).
+
+### Default Hardware Profile
+The built-in calibration factors are optimized for the baseline hardware setup used in this study (**Olympus BX51 microscope equipped with a Zeiss Axiocam 105 camera at $2560 \times 1920$ pixels resolution**):
+* **10x Objective:** $1.2403\ \mu m/\text{pixel}$
+* **20x Objective:** $0.6202\ \mu m/\text{pixel}$
+* **40x Objective:** $0.3101\ \mu m/\text{pixel}$
+
+### Image Scaling Workflow
+To ensure scale-invariant feature extraction, input images are resized to $640 \times 640$ pixels for the YOLOv26 model. Once instances are segmented, the script dynamically maps the masks back onto the original high-resolution ($2560 \times 1920$) matrix. Absolute area quantification is performed using these original pixels multiplied by the hardware-specific constants.
+
+### How to Adapt for Other Microscope Systems
+If you wish to deploy this pipeline on a different optical platform (e.g., Nikon, Leica, Zeiss setups), you must update the calibration constants in `palynofacies_full.py` to maintain quantitative accuracy for absolute measurements:
+1. Capture an image of a standard **stage micrometer** using your custom setup.
+2. Measure the pixel length of a known physical distance (e.g., $100\ \mu m$) using an image analyzer.
+3. Calculate your custom factor: `Calibration Factor = Distance (µm) / Pixel Count`.
+4. Modify the calibration variables in the `palynofacies_full.py` script.
+5. All necessary code are in the '--microscope.py' script just add your values and update the 'palynofacies_full.py' script.
+
+*Note: For paleoenvironmental proxy analysis via the Tyson Ternary Plot, the pipeline calculates relative area percentages (% Area). Since relative ratios within a single frame are strictly scale-invariant, the distribution output remains mathematically accurate even without modifying the default calibration factors.*
