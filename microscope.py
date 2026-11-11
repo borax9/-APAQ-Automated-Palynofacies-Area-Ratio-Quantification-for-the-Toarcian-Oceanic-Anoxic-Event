@@ -16,7 +16,7 @@ def get_calibration_factors(microscope_type):
             '40x': 0.3101
         },
         'nikon': {
-            '10x': 1.1520,  # Nikon + Jenoptik için ölçtüğünüz/hesapladığınız gerçek değerler
+            '10x': 1.1520,  # Nikon + Jenoptik için olctugumuz degerler
             '20x': 0.5760,  # (Buradaki değerleri kendi ölçümünüze göre güncelleyebilirsiniz)
             '40x': 0.2880
         }
